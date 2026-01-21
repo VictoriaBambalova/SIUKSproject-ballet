@@ -1,56 +1,24 @@
-/* global TWEEN, group, sphere, cylinder, cone, cube, radians */
+/* global TWEEN, radians */
 
 window.addEventListener("load", () => {
   const scene = window.scene;
   if (!scene) {
-    console.error("No <suica id='scene'> found. Check index.html.");
+    console.error("No <suica id='scene'> found.");
     return;
   }
 
-  // Camera setup
-  scene.background("whitesmoke");
-  scene.demo(6, 20, 0);
+  const leftLeg = window.leftLeg;
+  const rightLeg = window.rightLeg;
+  const lFoot = window.lFoot;
+  const rFoot = window.rFoot;
+  const leftArm = window.leftArm;
+  const rightArm = window.rightArm;
 
-  // Build ballerina from primitives
-  const ballerina = group();
+  if (!leftLeg || !rightLeg || !lFoot || !rFoot) {
+    console.error("Ballerina parts not found. Check ids in HTML.");
+    return;
+  }
 
-  // Scale and position
-  ballerina.size = 2.2;
-  ballerina.center = [0, 0.2, 0];
-
-  // Body
-  const torso = cylinder([0, 2.2, 0], [0.7, 1.4, 0.7], "white");
-  const head = sphere([0, 3.5, 0], 0.42, "mistyrose");
-  const tutu = cone([0, 1.55, 0], [1.4, 0.8, 1.4], "pink");
-
-  // Arms
-  const leftArm = cylinder([-0.95, 2.35, 0], [0.14, 1.05, 0.14], "mistyrose");
-  const rightArm = cylinder([0.95, 2.35, 0], [0.14, 1.05, 0.14], "mistyrose");
-
-  leftArm.spin = [0, 0, radians(25)];
-  rightArm.spin = [0, 0, radians(-25)];
-
-  // Legs
-  const leftLeg = group();
-  const rightLeg = group();
-
-  const lThigh = cylinder([0, 0.9, 0], [0.2, 1.0, 0.2], "gainsboro");
-  const lShin = cylinder([0, 0.1, 0], [0.16, 0.8, 0.16], "gainsboro");
-  const lFoot = cube([0, -0.3, 0.3], [0.55, 0.15, 1.05], "linen");
-
-  const rThigh = cylinder([0, 0.9, 0], [0.2, 1.0, 0.2], "gainsboro");
-  const rShin = cylinder([0, 0.1, 0], [0.16, 0.8, 0.16], "gainsboro");
-  const rFoot = cube([0, -0.3, 0.3], [0.55, 0.15, 1.05], "linen");
-
-  leftLeg.add(lThigh, lShin, lFoot);
-  rightLeg.add(rThigh, rShin, rFoot);
-
-  ballerina.add(torso, head, tutu, leftArm, rightArm, leftLeg, rightLeg);
-
-  leftLeg.center = [-0.25, 0.9, 0];
-  rightLeg.center = [0.25, 0.9, 0];
-
-  // Poses
   const poses = {
     1: {
       name: "I",
@@ -68,14 +36,14 @@ window.addEventListener("load", () => {
     },
     3: {
       name: "III",
-      desc: "One foot in front (near).",
+      desc: "One foot in front.",
       dist: 0.1,
       turnout: 45,
       front: 0.6,
     },
     4: {
       name: "IV",
-      desc: "One foot in front (apart).",
+      desc: "Separated front position.",
       dist: 0.4,
       turnout: 45,
       front: 0.9,
@@ -116,14 +84,15 @@ window.addEventListener("load", () => {
       rightLeg.center = [0.1, 0.9, -0.42];
     }
 
-    const lift = p.name === "V" ? 14 : p.name === "II" ? 6 : 0;
-    leftArm.spin = [0, 0, radians(25 + lift)];
-    rightArm.spin = [0, 0, radians(-(25 + lift))];
+    if (leftArm && rightArm) {
+      const lift = p.name === "V" ? 14 : p.name === "II" ? 6 : 0;
+      leftArm.spin = [0, 0, radians(25 + lift)];
+      rightArm.spin = [0, 0, radians(-(25 + lift))];
+    }
   }
 
   applyPose(current);
 
-  // Tween transition
   let tween = null;
 
   function goToPose(id) {
@@ -134,11 +103,7 @@ window.addEventListener("load", () => {
 
     tween = new TWEEN.Tween(current)
       .to(
-        {
-          dist: target.dist,
-          turnout: target.turnout,
-          front: target.front,
-        },
+        { dist: target.dist, turnout: target.turnout, front: target.front },
         900,
       )
       .easing(TWEEN.Easing.Quadratic.InOut)
@@ -148,35 +113,10 @@ window.addEventListener("load", () => {
     updateUI(target, id);
   }
 
-  // Rotation with drag
-  let dragging = false;
-  let lastX = 0;
-
-  scene.onpointerdown = (e) => {
-    dragging = true;
-    lastX = e.clientX;
-  };
-
-  scene.onpointerup = () => {
-    dragging = false;
-  };
-
-  scene.onpointermove = (e) => {
-    if (!dragging) return;
-
-    const dx = e.clientX - lastX;
-    const old = ballerina.spin || [0, 0, 0];
-
-    ballerina.spin = [old[0] + dx * 0.01, old[1], old[2]];
-
-    lastX = e.clientX;
-  };
-
   scene.ontime = () => {
     TWEEN.update();
   };
 
-  // UI
   const nameEl = document.getElementById("poseName");
   const descEl = document.getElementById("poseDesc");
   const buttons = document.querySelectorAll(".poseBar button");
@@ -191,9 +131,7 @@ window.addEventListener("load", () => {
   }
 
   buttons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      goToPose(Number(btn.dataset.pose));
-    });
+    btn.addEventListener("click", () => goToPose(Number(btn.dataset.pose)));
   });
 
   updateUI(poses[1], 1);
