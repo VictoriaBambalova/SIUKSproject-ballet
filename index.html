@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="suica.js"></script>
+    <script src="tween.umd.js"></script>
+    <script src="main.js"></script>
+    <title>Ballet – The Six Positions</title>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="wrap">
+      <h1>Балет: шестте позиции на стъпалата</h1>
+      <p class="lead">
+        В този урок ще разгледаме 6 позиции на стъпалата в класическия балет.
+        Избери позиция, завърти модела с мишката и наблюдавай как балерината
+        преминава плавно между позите.
+      </p>
+    </header>
+
+    <main class="wrap">
+      <section class="stage">
+        <div class="canvasShell">
+          <!-- Suica canvas -->
+          <suica id="scene" class="suica"></suica>
+
+          <!-- Overlay UI -->
+          <div class="overlay">
+            <div class="hint">Drag: въртене • Buttons: избор на поза</div>
+
+            <div class="poseBar">
+              <button data-pose="1">I</button>
+              <button data-pose="2">II</button>
+              <button data-pose="3">III</button>
+              <button data-pose="4">IV</button>
+              <button data-pose="5">V</button>
+              <button data-pose="6">VI</button>
+            </div>
+
+            <div class="status">
+              <span id="poseName">Pose: I</span>
+              <span id="poseDesc">Heels together, turnout.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="lesson">
+        <h2>Кратка теория</h2>
+
+        <div class="cards">
+          <article class="card">
+            <h3>Позиция I</h3>
+            <p>Петите са събрани, пръстите са завъртени навън.</p>
+          </article>
+
+          <article class="card">
+            <h3>Позиция II</h3>
+            <p>Като I, но стъпалата са на разстояние едно от друго.</p>
+          </article>
+
+          <article class="card">
+            <h3>Позиция III</h3>
+            <p>Едното стъпало е пред другото, петата към средата.</p>
+          </article>
+
+          <article class="card">
+            <h3>Позиция IV</h3>
+            <p>Като III, но с разстояние между стъпалата.</p>
+          </article>
+
+          <article class="card">
+            <h3>Позиция V</h3>
+            <p>Стъпалата са плътно кръстосани.</p>
+          </article>
+
+          <article class="card">
+            <h3>Позиция VI</h3>
+            <p>Паралелни стъпала (по-късно добавена позиция).</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="wrap footer">
+      <p>
+        Проект по „Създаване на интерактивно учебно компютърно съдържание“ •
+        Suica
+      </p>
+    </footer>
+
+    <!-- ВАЖНО: скриптовете са най-накрая и в правилния ред -->
+  </body>
+</html>
