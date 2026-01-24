@@ -13,7 +13,7 @@
         height: 100%;
         overflow: hidden;
         font-family: system-ui, Arial, sans-serif;
-        touch-action: none;
+        touch-action: none; /* предотвратява скрол/gesture конфликт при drag */
       }
 
       #ui {
@@ -82,10 +82,20 @@
   </head>
 
   <body>
+    <!--
+      2D учебно поле (orthographic camera) за упражнение:
+      Ученикът пресъздава балетните позиции чрез влачене и въртене.
+    -->
     <suica id="scene" fullwindow background="LavenderBlush">
+      <!-- proactive гарантира регулярни обновявания при интеракция -->
       <proactive></proactive>
     </suica>
 
+    <!--
+      Контролен панел:
+      - Бутони за пресети (шест позиции)
+      - Слайдер за прецизно завъртане на избраното стъпало
+    -->
     <div id="ui">
       <h3>Задача 1: Подреди стъпалата в балетните позиции</h3>
 
@@ -118,20 +128,38 @@
       <div class="hint">
         • Ляв бутон: влачи стъпалото<br />
         • Десен бутон + влачене: завъртай<br />
-        • Shift при въртене: snap към 15°<br />
+        • Shift при въртене: фиксация към 15°<br />
       </div>
     </div>
 
     <script>
+      // =========================================================
+      // 1) Настройка на 2D сцена
+      // =========================================================
       fullWindow();
       orthographic(-1000, 1000);
       background("LavenderBlush");
-      lookAt([0, 0, 300]);
+      lookAt([0, 0, 300]); // камерата гледа към равнината на мрежата
 
-      const SCALE = 30;
+      // =========================================================
+      // 2) Параметри на учебната мрежа и модела на стъпало
+      // =========================================================
+      const SCALE = 30; // "полуклетка" в пиксели; използва се за лесно подравняване по мрежата
       const GRID_W = 700;
       const GRID_H = 450;
 
+      // Модел на стъпало като композиция от 3 правоъгълника:
+      // жълто = пръсти, синьо = стъпало, червено = пета (както е в предоставените схеми)
+      // Забележка: цветовете са съобразени с визуалното изискване от задачата.
+      const H = 3 * SCALE; // "ширина" на стъпалото по Y
+      const L_TOE = 3 * SCALE;
+      const L_MID = 7 * SCALE;
+      const L_HEEL = 3 * SCALE;
+      const TOTAL_L = L_TOE + L_MID + L_HEEL; // обща дължина по X
+
+      // =========================================================
+      // 3) Визуализация на квадратна мрежа
+      // =========================================================
       const grid = group();
       grid.z = -5;
 
@@ -142,9 +170,13 @@
         grid.add(line([-GRID_W, y, -5], [GRID_W, y, -5], "lightgray"));
       }
 
+      // оси за ориентация
       grid.add(line([-GRID_W, 0, -4], [GRID_W, 0, -4], "gray"));
       grid.add(line([0, -GRID_H, -4], [0, GRID_H, -4], "gray"));
 
+      // =========================================================
+      // 4) Модел на "стъпало" (група от 3 правоъгълника + контур)
+      // =========================================================
       function rectFillWithOutline(center, size, fillColor) {
         const fill = square(
           [center[0], center[1], -1],
@@ -162,25 +194,25 @@
       }
 
       function makeFoot() {
-        const H = 3 * SCALE;
-        const L_HEEL = 3 * SCALE;
-        const L_MID = 7 * SCALE;
-        const L_TOE = 3 * SCALE;
+        const totalL = TOTAL_L;
 
-        const totalL = L_HEEL + L_MID + L_TOE;
+        // локални центрове по X за трите сегмента
+        const xToe = -totalL / 2 + L_TOE / 2;
+        const xMid = xToe + L_TOE / 2 + L_MID / 2;
+        const xHeel = xMid + L_MID / 2 + L_HEEL / 2;
 
-        const xHeel = -totalL / 2 + L_HEEL / 2;
-        const xMid = xHeel + L_HEEL / 2 + L_MID / 2;
-        const xToe = xMid + L_MID / 2 + L_TOE / 2;
-
-        const heel = rectFillWithOutline([xHeel, 0, 0], [L_HEEL, H], "#ffe066");
+        // Жълто = пръсти, Синьо = стъпало, Червено = пета
+        const toe = rectFillWithOutline([xToe, 0, 0], [L_TOE, H], "#ffe066");
         const mid = rectFillWithOutline([xMid, 0, 0], [L_MID, H], "#00b4d8");
-        const toe = rectFillWithOutline([xToe, 0, 0], [L_TOE, H], "#ff595e");
+        const heel = rectFillWithOutline([xHeel, 0, 0], [L_HEEL, H], "#ff595e");
 
-        const g = group(heel, mid, toe);
+        const g = group(toe, mid, heel);
+
+        // служебни данни за интерактивност
         g._angle = 0;
-        g._parts = [heel, mid, toe];
+        g._parts = [toe, mid, heel];
         for (const p of g._parts) p._foot = g;
+
         return g;
       }
 
@@ -188,7 +220,11 @@
       const foot2 = makeFoot();
       const interactiveParts = [...foot1._parts, ...foot2._parts];
 
+      // =========================================================
+      // 5) UI избор на обект и прецизно въртене със слайдер
+      // =========================================================
       let selectedFoot = null;
+
       function selectFoot(f) {
         selectedFoot = f;
         document.getElementById("sel").textContent =
@@ -205,26 +241,30 @@
         document.getElementById("angleVal").textContent = a;
       };
 
-      // ✅ helper: нормализира позицията от findPosition към {x,y}
+      // =========================================================
+      // 6) Drag & Rotate интерактивност (основна цел на упражнението)
+      // =========================================================
       function posXY(p) {
+        // Suica може да върне позиция като масив [x,y,z] или като обект с x,y
         if (!p) return null;
         if (Array.isArray(p)) return { x: p[0], y: p[1] };
         if (typeof p.x === "number" && typeof p.y === "number")
           return { x: p.x, y: p.y };
-        // понякога може да върне обект като vector с индексни полета
         if (typeof p[0] === "number" && typeof p[1] === "number")
           return { x: p[0], y: p[1] };
         return null;
       }
 
       let dragFoot = null;
-      let dragMode = null;
+      let dragMode = null; // "move" | "rotate"
       let startMouse = { x: 0, y: 0 };
       let startAngle = 0;
 
+      // десен бутон: спираме контекстното меню, за да се ползва за въртене
       window.addEventListener("contextmenu", (e) => e.preventDefault());
 
       function onPointerDown(event) {
+        // клик върху панела не трябва да влияе на сцената
         if (event.target && event.target.closest && event.target.closest("#ui"))
           return;
 
@@ -236,12 +276,14 @@
 
         selectFoot(f);
         dragFoot = f;
+
         startMouse = { x: event.clientX, y: event.clientY };
         startAngle = dragFoot._angle;
+
         dragMode = event.button === 2 ? "rotate" : "move";
       }
 
-      function onPointerUp(event) {
+      function onPointerUp() {
         dragFoot = null;
         dragMode = null;
       }
@@ -252,11 +294,13 @@
         if (dragMode === "move") {
           const raw = findPosition(event);
           const p = posXY(raw);
-          if (!p) return; // ако не може да се прочете позиция – нищо не правим
+          if (!p) return;
           dragFoot.center = [p.x, p.y, 0];
         } else if (dragMode === "rotate") {
           const dx = event.clientX - startMouse.x;
           let a = startAngle + dx * 0.6;
+
+          // по-лесна проверка на ъгли от ученика чрез фиксация към кратни на 15°
           if (event.shiftKey) a = 15 * Math.round(a / 15);
 
           dragFoot._angle = a;
@@ -273,6 +317,9 @@
       window.addEventListener("pointermove", onPointerMove, { passive: false });
       window.addEventListener("pointerup", onPointerUp, { passive: false });
 
+      // =========================================================
+      // 7) Пресети (шест позиции) – целеви конфигурации за упражнението
+      // =========================================================
       function setFoot(f, cx, cy, ang) {
         f.center = [cx, cy, 0];
         f._angle = ang;
@@ -283,28 +330,51 @@
         const y0 = -2 * SCALE;
 
         if (i === 1) {
-          setFoot(foot1, -5 * SCALE, y0, 0);
-          setFoot(foot2, 5 * SCALE, y0, 180);
+          // I позиция: стъпалата са долепени без застъпване.
+          // За да няма overlap: разликата по X между центровете трябва да е точно TOTAL_L.
+          setFoot(foot1, -TOTAL_L / 2, y0, 0);
+          setFoot(foot2, TOTAL_L / 2, y0, 180);
         }
+
         if (i === 2) {
+          // II позиция: по-широко раздалечени (оставям както беше).
           setFoot(foot1, -10 * SCALE, y0, 0);
           setFoot(foot2, 10 * SCALE, y0, 180);
         }
+
         if (i === 3) {
-          setFoot(foot1, -5 * SCALE, y0 - 2 * SCALE, 0);
-          setFoot(foot2, 3 * SCALE, y0 + 6 * SCALE, 135);
+          // III позиция: връщане към предходната визия (диагонално стъпало),
+          // като изискването е жълтото (пръстите) да е отгоре.
+          // Това се постига с обръщане на 180° спрямо 45°, т.е. 225°.
+          setFoot(foot1, -6 * SCALE, y0, 0);
+          setFoot(foot2, 6 * SCALE, y0 + 5 * SCALE, 225);
         }
+
         if (i === 4) {
-          setFoot(foot1, -5 * SCALE, y0 - 5 * SCALE, 0);
-          setFoot(foot2, 5 * SCALE, y0 + 5 * SCALE, 180);
+          // IV позиция: едно над друго, различават се само по Y.
+          const xSame = 0;
+          setFoot(foot1, xSame, y0 - 6 * SCALE, 0);
+          setFoot(foot2, xSame, y0 + 6 * SCALE, 180);
         }
+
         if (i === 5) {
-          setFoot(foot1, 0, y0 - 4 * SCALE, 0);
-          setFoot(foot2, 0, y0 + 4 * SCALE, 180);
+          // V позиция: като IV, но долепени по ръб (без разстояние).
+          // Горният ръб на долното съвпада с долния ръб на горното:
+          // yTop = yBottom + H.
+          const xSame = 0;
+          const yBottom = y0 - 2 * SCALE;
+          const yTop = yBottom + H;
+
+          setFoot(foot1, xSame, yBottom, 0);
+          setFoot(foot2, xSame, yTop, 180);
         }
+
         if (i === 6) {
-          setFoot(foot1, -2 * SCALE, y0, 90);
-          setFoot(foot2, 2 * SCALE, y0, 90);
+          // VI позиция: долепени по дългата си страна (по X),
+          // с противоположна ориентация, без разстояние между тях.
+          const ySame = y0;
+          setFoot(foot1, -TOTAL_L / 2, ySame, 0);
+          setFoot(foot2, TOTAL_L / 2, ySame, 180);
         }
 
         if (selectedFoot) selectFoot(selectedFoot);
@@ -316,7 +386,7 @@
         if (selectedFoot) selectFoot(selectedFoot);
       };
 
-      // старт
+      // стартова демонстрация
       setPose(1);
     </script>
   </body>
