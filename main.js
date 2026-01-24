@@ -11,11 +11,24 @@ window.addEventListener("load", () => {
   const rightLeg = window.rightLeg;
   const lFoot = window.lFoot;
   const rFoot = window.rFoot;
+
   const leftArm = window.leftArm;
   const rightArm = window.rightArm;
+  const lForeGroup = window.lForeGroup;
+  const rForeGroup = window.rForeGroup;
+
+  const lShinGroup = window.lShinGroup;
+  const rShinGroup = window.rShinGroup;
 
   if (!leftLeg || !rightLeg || !lFoot || !rFoot) {
-    console.error("Ballerina parts not found. Check ids in HTML.");
+    console.error("Leg parts not found. Check ids in index.html.");
+    return;
+  }
+
+  if (!lShinGroup || !rShinGroup) {
+    console.error(
+      "Shin groups not found (lShinGroup / rShinGroup). Check ids in index.html.",
+    );
     return;
   }
 
@@ -26,6 +39,9 @@ window.addEventListener("load", () => {
       dist: 0.0,
       turnout: 45,
       front: 0.0,
+      armLift: 0,
+      elbowBend: 10,
+      kneeBend: 0,
     },
     2: {
       name: "II",
@@ -33,20 +49,29 @@ window.addEventListener("load", () => {
       dist: 1.0,
       turnout: 45,
       front: 0.0,
+      armLift: 6,
+      elbowBend: 18,
+      kneeBend: 0,
     },
     3: {
       name: "III",
-      desc: "One foot in front.",
+      desc: "One foot in front (near).",
       dist: 0.1,
       turnout: 45,
       front: 0.6,
+      armLift: 2,
+      elbowBend: 14,
+      kneeBend: 4,
     },
     4: {
       name: "IV",
-      desc: "Separated front position.",
+      desc: "One foot in front (apart).",
       dist: 0.4,
       turnout: 45,
       front: 0.9,
+      armLift: 4,
+      elbowBend: 16,
+      kneeBend: 8,
     },
     5: {
       name: "V",
@@ -54,6 +79,9 @@ window.addEventListener("load", () => {
       dist: 0.0,
       turnout: 55,
       front: 0.8,
+      armLift: 14,
+      elbowBend: 22,
+      kneeBend: 10,
     },
     6: {
       name: "VI",
@@ -61,6 +89,9 @@ window.addEventListener("load", () => {
       dist: 0.3,
       turnout: 0,
       front: 0.0,
+      armLift: -2,
+      elbowBend: 10,
+      kneeBend: 0,
     },
   };
 
@@ -85,10 +116,18 @@ window.addEventListener("load", () => {
     }
 
     if (leftArm && rightArm) {
-      const lift = p.name === "V" ? 14 : p.name === "II" ? 6 : 0;
-      leftArm.spin = [0, 0, radians(25 + lift)];
-      rightArm.spin = [0, 0, radians(-(25 + lift))];
+      const base = 20 + p.armLift;
+      leftArm.spin = [0, 0, radians(base)];
+      rightArm.spin = [0, 0, radians(-base)];
     }
+
+    if (lForeGroup && rForeGroup) {
+      lForeGroup.spin = [0, 0, radians(p.elbowBend)];
+      rForeGroup.spin = [0, 0, radians(-p.elbowBend)];
+    }
+
+    lShinGroup.spin = [0, 0, radians(p.kneeBend)];
+    rShinGroup.spin = [0, 0, radians(p.kneeBend)];
   }
 
   applyPose(current);
@@ -103,7 +142,14 @@ window.addEventListener("load", () => {
 
     tween = new TWEEN.Tween(current)
       .to(
-        { dist: target.dist, turnout: target.turnout, front: target.front },
+        {
+          dist: target.dist,
+          turnout: target.turnout,
+          front: target.front,
+          armLift: target.armLift,
+          elbowBend: target.elbowBend,
+          kneeBend: target.kneeBend,
+        },
         900,
       )
       .easing(TWEEN.Easing.Quadratic.InOut)

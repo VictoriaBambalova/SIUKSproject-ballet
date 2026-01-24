@@ -2,121 +2,227 @@
 <html lang="bg">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="suica.js"></script>
-    <script src="tween.umd.js"></script>
-    <script src="main.js"></script>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="./suica.js"></script>
+    <script src="./tween.umd.js"></script>
+    <script src="./main.js"></script>
     <title>Ballet – The Six Positions</title>
-
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
     <header class="wrap">
       <h1>Балет: шестте позиции на стъпалата</h1>
       <p class="lead">
         В този урок ще разгледаме 6 позиции на стъпалата в класическия балет.
-        Избери позиция, завърти модела с мишката и наблюдавай как балерината
-        преминава плавно между позите.
+        Избери позиция, завърти сцената и наблюдавай как моделът преминава
+        плавно между позите.
       </p>
     </header>
 
     <main class="wrap">
       <section class="stage">
         <div class="canvasShell">
-          <!-- Suica canvas -->
           <suica id="scene" class="suica" background="whitesmoke">
-            <demo distance="6" altitude="20" speed="0"></demo>
-            <orbit target="0,1.5,0" minDistance="3" maxDistance="12"></orbit>
+            <orbit></orbit>
 
-            <!-- Root group -->
-            <group id="ballerina" center="0,0.2,0" size="2.2">
-              <!-- Body -->
-              <cylinder
-                id="torso"
-                center="0,2.2,0"
-                size="0.7,1.4,0.7"
-                color="white"
-              ></cylinder>
+            <group id="ballerina" center="0,-10,0" size="12">
+              <!-- Shoulders: slightly closer to torso -->
               <sphere
-                id="head"
-                center="0,3.5,0"
-                size="0.42"
+                id="lShoulder"
+                center="-0.75,2.65,0"
+                size="0.18"
                 color="mistyrose"
               ></sphere>
-              <cone
-                id="tutu"
-                center="0,1.55,0"
-                size="1.4,0.8,1.4"
-                color="pink"
-              ></cone>
+              <sphere
+                id="rShoulder"
+                center="0.75,2.65,0"
+                size="0.18"
+                color="mistyrose"
+              ></sphere>
 
-              <!-- Arms -->
-              <cylinder
-                id="leftArm"
-                center="-0.95,2.35,0"
-                size="0.14,1.05,0.14"
+              <!-- Small shoulder pads (adds volume like deltoid) -->
+              <sphere
+                id="lDeltoid"
+                center="-0.70,2.58,0.06"
+                size="0.16"
                 color="mistyrose"
-                spin="0,0,25"
-              ></cylinder>
-              <cylinder
-                id="rightArm"
-                center="0.95,2.35,0"
-                size="0.14,1.05,0.14"
+              ></sphere>
+              <sphere
+                id="rDeltoid"
+                center="0.70,2.58,0.06"
+                size="0.16"
                 color="mistyrose"
-                spin="0,0,-25"
-              ></cylinder>
+              ></sphere>
+
+              <!-- Left arm: shorter segments, clearer joints, closer center -->
+              <group id="leftArm" center="-0.75,2.65,0" spin="0,0,20">
+                <cylinder
+                  id="lUpperArm"
+                  center="0,-0.22,0"
+                  size="0.14,0.52,0.14"
+                  color="mistyrose"
+                ></cylinder>
+                <sphere
+                  id="lElbow"
+                  center="0,-0.52,0"
+                  size="0.15"
+                  color="mistyrose"
+                ></sphere>
+
+                <group id="lForeGroup" center="0,-0.52,0" spin="0,0,0">
+                  <cylinder
+                    id="lForeArm"
+                    center="0,-0.28,0"
+                    size="0.12,0.56,0.12"
+                    color="mistyrose"
+                  ></cylinder>
+                  <sphere
+                    id="lWrist"
+                    center="0,-0.60,0"
+                    size="0.13"
+                    color="mistyrose"
+                  ></sphere>
+                  <cone
+                    id="lHand"
+                    center="0,-0.76,0.05"
+                    size="0.18,0.22,0.18"
+                    color="mistyrose"
+                  ></cone>
+                </group>
+              </group>
+
+              <!-- Right arm -->
+              <group id="rightArm" center="0.75,2.65,0" spin="0,0,-20">
+                <cylinder
+                  id="rUpperArm"
+                  center="0,-0.22,0"
+                  size="0.14,0.52,0.14"
+                  color="mistyrose"
+                ></cylinder>
+                <sphere
+                  id="rElbow"
+                  center="0,-0.52,0"
+                  size="0.15"
+                  color="mistyrose"
+                ></sphere>
+
+                <group id="rForeGroup" center="0,-0.52,0" spin="0,0,0">
+                  <cylinder
+                    id="rForeArm"
+                    center="0,-0.28,0"
+                    size="0.12,0.56,0.12"
+                    color="mistyrose"
+                  ></cylinder>
+                  <sphere
+                    id="rWrist"
+                    center="0,-0.60,0"
+                    size="0.13"
+                    color="mistyrose"
+                  ></sphere>
+                  <cone
+                    id="rHand"
+                    center="0,-0.76,0.05"
+                    size="0.18,0.22,0.18"
+                    color="mistyrose"
+                  ></cone>
+                </group>
+              </group>
+
+              <!-- Hips -->
+              <sphere
+                id="lHip"
+                center="-0.32,1.35,0"
+                size="0.16"
+                color="gainsboro"
+              ></sphere>
+              <sphere
+                id="rHip"
+                center="0.32,1.35,0"
+                size="0.16"
+                color="gainsboro"
+              ></sphere>
 
               <!-- Left leg -->
-              <group id="leftLeg" center="-0.25,0.9,0">
+              <group id="leftLeg" center="-0.25,0.90,0">
                 <cylinder
                   id="lThigh"
-                  center="0,0.9,0"
-                  size="0.20,1.00,0.20"
+                  center="0,0.75,0"
+                  size="0.23,1.00,0.23"
                   color="gainsboro"
                 ></cylinder>
-                <cylinder
-                  id="lShin"
-                  center="0,0.1,0"
-                  size="0.16,0.80,0.16"
+                <sphere
+                  id="lKnee"
+                  center="0,0.20,0"
+                  size="0.15"
                   color="gainsboro"
-                ></cylinder>
-                <cube
-                  id="lFoot"
-                  center="0,-0.3,0.30"
-                  size="0.55,0.15,1.05"
-                  color="linen"
-                ></cube>
+                ></sphere>
+
+                <group id="lShinGroup" center="0,0.20,0" spin="0,0,0">
+                  <cylinder
+                    id="lShin"
+                    center="0,-0.45,0"
+                    size="0.18,1.00,0.18"
+                    color="gainsboro"
+                  ></cylinder>
+                  <sphere
+                    id="lAnkle"
+                    center="0,-0.98,0"
+                    size="0.12"
+                    color="gainsboro"
+                  ></sphere>
+                  <cube
+                    id="lFoot"
+                    center="0,-1.12,0.35"
+                    size="0.60,0.16,1.10"
+                    color="linen"
+                  ></cube>
+                </group>
               </group>
 
               <!-- Right leg -->
-              <group id="rightLeg" center="0.25,0.9,0">
+              <group id="rightLeg" center="0.25,0.90,0">
                 <cylinder
                   id="rThigh"
-                  center="0,0.9,0"
-                  size="0.20,1.00,0.20"
+                  center="0,0.75,0"
+                  size="0.23,1.00,0.23"
                   color="gainsboro"
                 ></cylinder>
-                <cylinder
-                  id="rShin"
-                  center="0,0.1,0"
-                  size="0.16,0.80,0.16"
+                <sphere
+                  id="rKnee"
+                  center="0,0.20,0"
+                  size="0.15"
                   color="gainsboro"
-                ></cylinder>
-                <cube
-                  id="rFoot"
-                  center="0,-0.3,0.30"
-                  size="0.55,0.15,1.05"
-                  color="linen"
-                ></cube>
+                ></sphere>
+
+                <group id="rShinGroup" center="0,0.20,0" spin="0,0,0">
+                  <cylinder
+                    id="rShin"
+                    center="0,-0.45,0"
+                    size="0.18,1.00,0.18"
+                    color="gainsboro"
+                  ></cylinder>
+                  <sphere
+                    id="rAnkle"
+                    center="0,-0.98,0"
+                    size="0.12"
+                    color="gainsboro"
+                  ></sphere>
+                  <cube
+                    id="rFoot"
+                    center="0,-1.12,0.35"
+                    size="0.60,0.16,1.10"
+                    color="linen"
+                  ></cube>
+                </group>
               </group>
             </group>
           </suica>
 
-          <!-- Overlay UI -->
           <div class="overlay">
-            <div class="hint">Drag: въртене • Buttons: избор на поза</div>
+            <div class="hint">Drag: orbit • Buttons: избор на поза</div>
 
-            <div class="poseBar">
+            <div class="poseBar" role="group" aria-label="Избор на поза">
               <button data-pose="1">I</button>
               <button data-pose="2">II</button>
               <button data-pose="3">III</button>
@@ -176,7 +282,5 @@
         Suica
       </p>
     </footer>
-
-    <!-- ВАЖНО: скриптовете са най-накрая и в правилния ред -->
   </body>
 </html>
