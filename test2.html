@@ -2,460 +2,322 @@
 <html lang="bg">
   <head>
     <meta charset="utf-8" />
-    <title>Балерина – Suica проект</title>
+    <title>Балет – Задача 1 (2D стъпала)</title>
 
-    <!-- Библиотеки -->
     <script src="suica.js"></script>
-    <script src="tween.umd.js"></script>
+
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family: system-ui, Arial, sans-serif;
+        touch-action: none;
+      }
+
+      #ui {
+        position: fixed;
+        left: 12px;
+        top: 12px;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+        padding: 10px 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        min-width: 260px;
+      }
+
+      #ui h3 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+      }
+
+      .row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin: 6px 0;
+      }
+
+      button {
+        border: 1px solid rgba(0, 0, 0, 0.18);
+        background: white;
+        border-radius: 8px;
+        padding: 6px 10px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      button:hover {
+        background: #f3f3f3;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: #333;
+        margin-top: 8px;
+        line-height: 1.3;
+      }
+
+      .small {
+        font-size: 12px;
+        color: #444;
+        margin-top: 6px;
+      }
+
+      input[type="range"] {
+        width: 100%;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        background: #fff;
+      }
+    </style>
   </head>
 
   <body>
-    <suica id="scene" background="whitesmoke" fullwindow>
-      <!-- Постоянно обновяване (нужно за tween) -->
+    <suica id="scene" fullwindow background="LavenderBlush">
       <proactive></proactive>
-
-      <!-- Камера -->
-      <orbit></orbit>
-
-      <!-- ============================================================
-           ТОРС
-           ============================================================ -->
-      <cone
-        id="torsoUpper"
-        center="0,15,0"
-        size="10,15,10"
-        color="#00b4d8"
-        spinV="180"
-        hidden="false"
-      ></cone>
-
-      <cone
-        id="torsoLower"
-        center="0,0,0"
-        size="29,8,29"
-        color="#0077b6"
-        hidden="false"
-      ></cone>
-
-      <!-- Талия -->
-      <sphere
-        id="waistRing"
-        center="0,7.5,0"
-        size="6.5,3,6.5"
-        color="#0077b6"
-        hidden="false"
-      ></sphere>
-
-      <!-- ============================================================
-           ГЛАВА, ВРАТ И КОСА
-           ============================================================ -->
-      <group id="HeadGroup" hidden="false">
-        <sphere
-          id="head"
-          center="0,20,0"
-          size="7"
-          color="mistyrose"
-          hidden="false"
-        ></sphere>
-
-        <cylinder
-          id="neck"
-          center="0,13,0"
-          size="2.5,5,2.5"
-          color="mistyrose"
-          hidden="false"
-        ></cylinder>
-
-        <!-- Коса -->
-        <sphere
-          id="hair"
-          center="0,20.5,-0.3"
-          size="7"
-          color="saddlebrown"
-          hidden="false"
-        ></sphere>
-
-        <sphere
-          id="bun"
-          center="0,23.5,-2.5"
-          size="3.7"
-          color="saddlebrown"
-          hidden="false"
-        ></sphere>
-      </group>
-
-      <!-- ============================================================
-           ШАБЛОНИ (СКРИТИ) – използват се само за clone
-           ============================================================ -->
-      <sphere id="joint" size="3" color="mistyrose" hidden="true"></sphere>
-
-      <cylinder
-        id="bone"
-        size="2.5,6,2.5"
-        color="mistyrose"
-        hidden="true"
-      ></cylinder>
-
-      <!-- ============================================================
-           РЪЦЕ (статични)
-           ============================================================ -->
-      <group id="ArmsGroup" center="0,4,-10" spinV="45" hidden="false">
-        <!-- ЛЯВА РЪКА -->
-        <group
-          id="ShoulderGroup"
-          center="-1.5,8,-11"
-          spinH="10"
-          spinV="60"
-          hidden="false"
-        >
-          <clone src="joint" id="lShoulder" center="5,14,0" hidden="false"></clone>
-
-          <clone
-            src="bone"
-            id="lUpperArm"
-            center="5,14,0"
-            size="2.5,6,2.5"
-            hidden="false"
-          ></clone>
-
-          <group
-            id="ElbowGroup"
-            center="13.5,2,-5"
-            spinH="-90"
-            spinV="25"
-            hidden="false"
-          >
-            <clone
-              src="joint"
-              id="lElbow"
-              center="5,20,0"
-              size="2.8"
-              hidden="false"
-            ></clone>
-
-            <clone
-              src="bone"
-              id="lLowerArm"
-              center="5,20,0"
-              size="2.5,6,2.5"
-              hidden="false"
-            ></clone>
-
-            <clone
-              src="joint"
-              id="wrist"
-              center="5,26,0"
-              size="3,5"
-              spinV="40"
-              spinH="-90"
-              hidden="false"
-            ></clone>
-          </group>
-        </group>
-
-        <!-- ДЯСНА РЪКА -->
-        <group
-          id="RightShoulderGroup"
-          center="1.5,8,-11"
-          spinH="-10"
-          spinV="60"
-          hidden="false"
-        >
-          <clone src="joint" id="rShoulder" center="-5,14,0" hidden="false"></clone>
-
-          <clone
-            src="bone"
-            id="rUpperArm"
-            center="-5,14,0"
-            size="2.5,6,2.5"
-            hidden="false"
-          ></clone>
-
-          <group
-            id="RightElbowGroup"
-            center="-13.5,2,-5"
-            spinH="90"
-            spinV="25"
-            hidden="false"
-          >
-            <clone
-              src="joint"
-              id="rElbow"
-              center="-5,20,0"
-              size="2.8"
-              hidden="false"
-            ></clone>
-
-            <clone
-              src="bone"
-              id="rLowerArm"
-              center="-5,20,0"
-              size="2.5,6,2.5"
-              hidden="false"
-            ></clone>
-
-            <clone
-              src="joint"
-              id="rWrist"
-              center="-5,26,0"
-              size="3,5"
-              spinV="40"
-              spinH="90"
-              hidden="false"
-            ></clone>
-          </group>
-        </group>
-      </group>
-
-      <!-- ============================================================
-           КРАКА
-           ============================================================ -->
-      <group id="LegsGroup" center="0,0,0" hidden="false">
-        <!-- ЛЯВ КРАК -->
-        <group id="LeftHipGroup" center="-2,0,0" hidden="false">
-          <clone
-            src="bone"
-            id="lThigh"
-            center="0,-9,0"
-            size="3.5,12,3.5"
-            hidden="false"
-          ></clone>
-
-          <group id="LeftKneeGroup" center="0,-9,0" hidden="false">
-            <clone src="joint" id="lKnee" size="3.8" hidden="false"></clone>
-
-            <clone
-              src="bone"
-              id="lCalf"
-              center="0,-10,0"
-              size="3,9,3"
-              hidden="false"
-            ></clone>
-
-            <group id="lShoe" spinH="-90" hidden="false">
-              <sphere
-                id="lFootBase"
-                center="0,-10,0"
-                size="3.5,2,3.5"
-                color="#0077b6"
-                hidden="false"
-              ></sphere>
-
-              <sphere
-                id="lFootTip"
-                center="0,-10,2"
-                size="3,2,7"
-                color="#0077b6"
-                hidden="false"
-              ></sphere>
-            </group>
-          </group>
-        </group>
-
-        <!-- ДЕСЕН КРАК -->
-        <group id="RightHipGroup" center="2,0,0" hidden="false">
-          <clone
-            src="bone"
-            id="rThigh"
-            center="0,-9,0"
-            size="3.5,12,3.5"
-            hidden="false"
-          ></clone>
-
-          <group id="RightKneeGroup" center="0,-9,0" hidden="false">
-            <clone src="joint" id="rKnee" size="3.8" hidden="false"></clone>
-
-            <clone
-              src="bone"
-              id="rCalf"
-              center="0,-10,0"
-              size="3,9,3"
-              hidden="false"
-            ></clone>
-
-            <group id="rShoe" spinH="90" hidden="false">
-              <sphere
-                id="rFootBase"
-                center="0,-10,0"
-                size="3.5,2,3.5"
-                color="#0077b6"
-                hidden="false"
-              ></sphere>
-
-              <sphere
-                id="rFootTip"
-                center="0,-10,2"
-                size="3,2,7"
-                color="#0077b6"
-                hidden="false"
-              ></sphere>
-            </group>
-          </group>
-        </group>
-      </group>
     </suica>
 
-    <!-- ============================================================
-         КОНТРОЛИ ЗА ПОЗИТЕ НА КРАКАТА
-         ============================================================ -->
-    <div
-      id="controls"
-      style="
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        z-index: 9999;
-        background: rgba(255, 255, 255, 0.85);
-        padding: 10px;
-        border-radius: 10px;
-      "
-    >
-      <button onclick="goLegs(1)">1-ва позиция</button>
-      <button onclick="goLegs(2)">2-ра позиция</button>
-      <button onclick="goLegs(3)">3-та позиция</button>
-      <button onclick="goLegs(4)">4-та позиция</button>
-      <button onclick="goLegs(5)">5-та позиция</button>
-      <button onclick="goLegs(6)">6-та позиция</button>
+    <div id="ui">
+      <h3>Задача 1: Подреди стъпалата в балетните позиции</h3>
+
+      <div class="row">
+        <button onclick="setPose(1)">I</button>
+        <button onclick="setPose(2)">II</button>
+        <button onclick="setPose(3)">III</button>
+        <button onclick="setPose(4)">IV</button>
+        <button onclick="setPose(5)">V</button>
+        <button onclick="setPose(6)">VI</button>
+        <button onclick="resetFeet()">Reset</button>
+      </div>
+
+      <div class="small">
+        Избрано стъпало: <span id="sel" class="badge">няма</span>
+      </div>
+
+      <div class="small" style="margin-top: 8px">Ъгъл (за избраното):</div>
+      <input
+        id="angleSlider"
+        type="range"
+        min="-180"
+        max="180"
+        value="0"
+        step="1"
+        oninput="sliderRotate(this.value)"
+      />
+      <div class="small">Angle: <span id="angleVal">0</span>°</div>
+
+      <div class="hint">
+        • Ляв бутон: влачи стъпалото<br />
+        • Десен бутон + влачене: завъртай<br />
+        • Shift при въртене: snap към 15°<br />
+      </div>
     </div>
 
     <script>
-      /* ============================================================
-         ЦВЕТОВЕ
-         ============================================================ */
+      fullWindow();
+      orthographic(-1000, 1000);
+      background("LavenderBlush");
+      lookAt([0, 0, 300]);
 
-      // Засиняваща функция (HSL формат за Suica)
-      function bluish(obj) {
-        obj.color = `hsl(${random(180, 225)}, 70%, 50%)`;
-        return obj;
+      const SCALE = 30;
+      const GRID_W = 700;
+      const GRID_H = 450;
+
+      const grid = group();
+      grid.z = -5;
+
+      for (let x = -GRID_W; x <= GRID_W; x += 2 * SCALE) {
+        grid.add(line([x, -GRID_H, -5], [x, GRID_H, -5], "lightgray"));
+      }
+      for (let y = -GRID_H; y <= GRID_H; y += 2 * SCALE) {
+        grid.add(line([-GRID_W, y, -5], [GRID_W, y, -5], "lightgray"));
       }
 
-      /* ============================================================
-         ПАЧКА (пола) – декоративни цилиндри
-         ============================================================ */
+      grid.add(line([-GRID_W, 0, -4], [GRID_W, 0, -4], "gray"));
+      grid.add(line([0, -GRID_H, -4], [0, GRID_H, -4], "gray"));
 
-      const TUTU_COUNT = 500;
+      function rectFillWithOutline(center, size, fillColor) {
+        const fill = square(
+          [center[0], center[1], -1],
+          [size[0], size[1]],
+          fillColor,
+        );
+        const border = square(
+          [center[0], center[1], 0],
+          [size[0], size[1]],
+          "black",
+        ).style({
+          wireframe: true,
+        });
+        return group(fill, border);
+      }
 
-      // Добавя един слой от "ресни" (цилиндри) около талията
-      function addTutuLayer(radius, y, width) {
-        for (let i = 0; i < TUTU_COUNT; i++) {
-          const a = radians((360 * i) / TUTU_COUNT);
+      function makeFoot() {
+        const H = 3 * SCALE;
+        const L_HEEL = 3 * SCALE;
+        const L_MID = 7 * SCALE;
+        const L_TOE = 3 * SCALE;
 
-          const c = bluish(
-            cylinder([radius * Math.cos(a), y, radius * Math.sin(a)], [width, 15])
-          );
+        const totalL = L_HEEL + L_MID + L_TOE;
 
-          c.spinH = 90 + degrees(-a);
-          c.spinV = 90 + 15 * Math.sin(6 * a);
+        const xHeel = -totalL / 2 + L_HEEL / 2;
+        const xMid = xHeel + L_HEEL / 2 + L_MID / 2;
+        const xToe = xMid + L_MID / 2 + L_TOE / 2;
+
+        const heel = rectFillWithOutline([xHeel, 0, 0], [L_HEEL, H], "#ffe066");
+        const mid = rectFillWithOutline([xMid, 0, 0], [L_MID, H], "#00b4d8");
+        const toe = rectFillWithOutline([xToe, 0, 0], [L_TOE, H], "#ff595e");
+
+        const g = group(heel, mid, toe);
+        g._angle = 0;
+        g._parts = [heel, mid, toe];
+        for (const p of g._parts) p._foot = g;
+        return g;
+      }
+
+      const foot1 = makeFoot();
+      const foot2 = makeFoot();
+      const interactiveParts = [...foot1._parts, ...foot2._parts];
+
+      let selectedFoot = null;
+      function selectFoot(f) {
+        selectedFoot = f;
+        document.getElementById("sel").textContent =
+          f === foot1 ? "ляво (Foot A)" : "дясно (Foot B)";
+        document.getElementById("angleSlider").value = Math.round(f._angle);
+        document.getElementById("angleVal").textContent = Math.round(f._angle);
+      }
+
+      window.sliderRotate = function (val) {
+        if (!selectedFoot) return;
+        const a = Number(val);
+        selectedFoot._angle = a;
+        selectedFoot.spinS = a;
+        document.getElementById("angleVal").textContent = a;
+      };
+
+      // ✅ helper: нормализира позицията от findPosition към {x,y}
+      function posXY(p) {
+        if (!p) return null;
+        if (Array.isArray(p)) return { x: p[0], y: p[1] };
+        if (typeof p.x === "number" && typeof p.y === "number")
+          return { x: p.x, y: p.y };
+        // понякога може да върне обект като vector с индексни полета
+        if (typeof p[0] === "number" && typeof p[1] === "number")
+          return { x: p[0], y: p[1] };
+        return null;
+      }
+
+      let dragFoot = null;
+      let dragMode = null;
+      let startMouse = { x: 0, y: 0 };
+      let startAngle = 0;
+
+      window.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      function onPointerDown(event) {
+        if (event.target && event.target.closest && event.target.closest("#ui"))
+          return;
+
+        const part = findObject(event, interactiveParts);
+        if (!part) return;
+
+        const f = part._foot;
+        if (!f) return;
+
+        selectFoot(f);
+        dragFoot = f;
+        startMouse = { x: event.clientX, y: event.clientY };
+        startAngle = dragFoot._angle;
+        dragMode = event.button === 2 ? "rotate" : "move";
+      }
+
+      function onPointerUp(event) {
+        dragFoot = null;
+        dragMode = null;
+      }
+
+      function onPointerMove(event) {
+        if (!dragFoot) return;
+
+        if (dragMode === "move") {
+          const raw = findPosition(event);
+          const p = posXY(raw);
+          if (!p) return; // ако не може да се прочете позиция – нищо не правим
+          dragFoot.center = [p.x, p.y, 0];
+        } else if (dragMode === "rotate") {
+          const dx = event.clientX - startMouse.x;
+          let a = startAngle + dx * 0.6;
+          if (event.shiftKey) a = 15 * Math.round(a / 15);
+
+          dragFoot._angle = a;
+          dragFoot.spinS = a;
+
+          if (dragFoot === selectedFoot) {
+            document.getElementById("angleSlider").value = Math.round(a);
+            document.getElementById("angleVal").textContent = Math.round(a);
+          }
         }
       }
 
-      // Трите слоя на пачката
-      addTutuLayer(3, 1, 1);
-      addTutuLayer(1.5, 4, 1);
-      addTutuLayer(0.01, 7, 1);
+      window.addEventListener("pointerdown", onPointerDown, { passive: false });
+      window.addEventListener("pointermove", onPointerMove, { passive: false });
+      window.addEventListener("pointerup", onPointerUp, { passive: false });
 
-      /* ============================================================
-         6 ПОЗИ НА КРАКАТА + ПЛАВЕН ПРЕХОД (TWEEN)
-         ============================================================ */
+      function setFoot(f, cx, cy, ang) {
+        f.center = [cx, cy, 0];
+        f._angle = ang;
+        f.spinS = ang;
+      }
 
-      window.addEventListener("load", () => {
-        const scene = window.scene;
-        if (!scene) {
-          console.error("Няма <suica id='scene'>.");
-          return;
+      window.setPose = function (i) {
+        const y0 = -2 * SCALE;
+
+        if (i === 1) {
+          setFoot(foot1, -5 * SCALE, y0, 0);
+          setFoot(foot2, 5 * SCALE, y0, 180);
+        }
+        if (i === 2) {
+          setFoot(foot1, -10 * SCALE, y0, 0);
+          setFoot(foot2, 10 * SCALE, y0, 180);
+        }
+        if (i === 3) {
+          setFoot(foot1, -5 * SCALE, y0 - 2 * SCALE, 0);
+          setFoot(foot2, 3 * SCALE, y0 + 6 * SCALE, 135);
+        }
+        if (i === 4) {
+          setFoot(foot1, -5 * SCALE, y0 - 5 * SCALE, 0);
+          setFoot(foot2, 5 * SCALE, y0 + 5 * SCALE, 180);
+        }
+        if (i === 5) {
+          setFoot(foot1, 0, y0 - 4 * SCALE, 0);
+          setFoot(foot2, 0, y0 + 4 * SCALE, 180);
+        }
+        if (i === 6) {
+          setFoot(foot1, -2 * SCALE, y0, 90);
+          setFoot(foot2, 2 * SCALE, y0, 90);
         }
 
-        if (
-          !window.LeftHipGroup ||
-          !window.RightHipGroup ||
-          !window.LeftKneeGroup ||
-          !window.RightKneeGroup
-        ) {
-          console.error(
-            "Липсват групи за краката. Провери id-тата: LeftHipGroup, RightHipGroup, LeftKneeGroup, RightKneeGroup."
-          );
-          return;
-        }
+        if (selectedFoot) selectFoot(selectedFoot);
+      };
 
-        const poses = {
-  // baseX = базова позиция по X (колко близо са краката по подразбиране)
-  // dist = допълнително раздалечаване
-  // front = пред/зад
-  // turnout = извъртане
-  // kneeBend = сгъване
+      window.resetFeet = function () {
+        setFoot(foot1, -8 * SCALE, -4 * SCALE, 0);
+        setFoot(foot2, 8 * SCALE, -4 * SCALE, 180);
+        if (selectedFoot) selectFoot(selectedFoot);
+      };
 
-  1: { name: "I",  baseX: 1.3, dist: 0.0, turnout: 35, front: 0.0, kneeBend: 0 },
-  2: { name: "II", baseX: 2.0, dist: 3.0, turnout: 35, front: 0.0, kneeBend: 0 },
-  3: { name: "III",baseX: 2.0, dist: 0.4, turnout: 35, front: 2.0, kneeBend: 4 },
-  4: { name: "IV", baseX: 2.0, dist: 1.2, turnout: 35, front: 3.5, kneeBend: 6 },
-
-  // За V позиция: по-събрани (baseX 1.8) + фронт по-голям
-  5: { name: "V",  baseX: 1.8, dist: 0.0, turnout: 45, front: 4.0, kneeBend: 8 },
-
-  6: { name: "VI", baseX: 2.0, dist: 1.0, turnout: 0,  front: 0.0, kneeBend: 0 }
-};
-
-
-        const current = { ...poses[1] };
-        let activePoseId = 1;
-        let tween = null;
-
-        function applyLegPose(p) {
-  const a = radians(p.turnout);
-  const half = p.dist / 2;
-
-  // baseX вече идва от позата -> това маха "скоковете" при I и V
-  const baseLX = -p.baseX;
-  const baseRX =  p.baseX;
-
-  // Раздалечаване/събиране + пред/зад
-  LeftHipGroup.center  = [baseLX - half, LeftHipGroup.center[1],  p.front * 0.5];
-  RightHipGroup.center = [baseRX + half, RightHipGroup.center[1], -p.front * 0.5];
-
-  // Turnout
-  LeftHipGroup.spin  = [a, 0, 0];
-  RightHipGroup.spin = [-a, 0, 0];
-
-  // Сгъване в коляното
-  LeftKneeGroup.spin  = [0, 0, radians(p.kneeBend)];
-  RightKneeGroup.spin = [0, 0, radians(p.kneeBend)];
-}
-
-
-        // правим goLegs глобална, за да я виждат бутоните
-        window.goLegs = function (id) {
-          const target = poses[id];
-          if (!target) return;
-
-          activePoseId = id;
-
-          if (tween) tween.stop();
-
-          tween = new TWEEN.Tween(current)
-  .to(
-    {
-      baseX: target.baseX,
-      dist: target.dist,
-      turnout: target.turnout,
-      front: target.front,
-      kneeBend: target.kneeBend
-    },
-    900
-  )
-
-            .easing(TWEEN.Easing.Quadratic.InOut)
-            .onUpdate(() => applyLegPose(current))
-            .start();
-        };
-
-        // update на tween-а
-        scene.ontime = () => {
-          TWEEN.update();
-        };
-
-        // стартова поза
-        applyLegPose(current);
-      });
+      // старт
+      setPose(1);
     </script>
   </body>
 </html>
