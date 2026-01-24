@@ -329,10 +329,6 @@
         return obj;
       }
 
-      // Прилагаме синкав тон на част от тялото
-      bluish(torsoUpper);
-      bluish(torsoLower);
-
       /* ============================================================
          ПАЧКА (пола) – декоративни цилиндри
          ============================================================ */
@@ -382,46 +378,49 @@
         }
 
         const poses = {
-          1: { name: "I", dist: 0.0, turnout: 35, front: 0.0, kneeBend: 0 },
-          2: { name: "II", dist: 3.0, turnout: 35, front: 0.0, kneeBend: 0 },
-          3: { name: "III", dist: 0.4, turnout: 35, front: 2.0, kneeBend: 4 },
-          4: { name: "IV", dist: 1.2, turnout: 35, front: 3.5, kneeBend: 6 },
-          5: { name: "V", dist: 0.0, turnout: 45, front: 3.0, kneeBend: 8 },
-          6: { name: "VI", dist: 1.0, turnout: 0, front: 0.0, kneeBend: 0 }
-        };
+  // baseX = базова позиция по X (колко близо са краката по подразбиране)
+  // dist = допълнително раздалечаване
+  // front = пред/зад
+  // turnout = извъртане
+  // kneeBend = сгъване
+
+  1: { name: "I",  baseX: 1.3, dist: 0.0, turnout: 35, front: 0.0, kneeBend: 0 },
+  2: { name: "II", baseX: 2.0, dist: 3.0, turnout: 35, front: 0.0, kneeBend: 0 },
+  3: { name: "III",baseX: 2.0, dist: 0.4, turnout: 35, front: 2.0, kneeBend: 4 },
+  4: { name: "IV", baseX: 2.0, dist: 1.2, turnout: 35, front: 3.5, kneeBend: 6 },
+
+  // За V позиция: по-събрани (baseX 1.8) + фронт по-голям
+  5: { name: "V",  baseX: 1.8, dist: 0.0, turnout: 45, front: 4.0, kneeBend: 8 },
+
+  6: { name: "VI", baseX: 2.0, dist: 1.0, turnout: 0,  front: 0.0, kneeBend: 0 }
+};
+
 
         const current = { ...poses[1] };
         let activePoseId = 1;
         let tween = null;
 
         function applyLegPose(p) {
-          const a = radians(p.turnout);
-          const half = p.dist / 2;
+  const a = radians(p.turnout);
+  const half = p.dist / 2;
 
-          const baseLX = -2.0;
-          const baseRX = 2.0;
+  // baseX вече идва от позата -> това маха "скоковете" при I и V
+  const baseLX = -p.baseX;
+  const baseRX =  p.baseX;
 
-          LeftHipGroup.center = [baseLX - half, LeftHipGroup.center[1], p.front * 0.5];
-          RightHipGroup.center = [baseRX + half, RightHipGroup.center[1], -p.front * 0.5];
+  // Раздалечаване/събиране + пред/зад
+  LeftHipGroup.center  = [baseLX - half, LeftHipGroup.center[1],  p.front * 0.5];
+  RightHipGroup.center = [baseRX + half, RightHipGroup.center[1], -p.front * 0.5];
 
-          LeftHipGroup.spin = [a, 0, 0];
-          RightHipGroup.spin = [-a, 0, 0];
+  // Turnout
+  LeftHipGroup.spin  = [a, 0, 0];
+  RightHipGroup.spin = [-a, 0, 0];
 
-          LeftKneeGroup.spin = [0, 0, radians(p.kneeBend)];
-          RightKneeGroup.spin = [0, 0, radians(p.kneeBend)];
+  // Сгъване в коляното
+  LeftKneeGroup.spin  = [0, 0, radians(p.kneeBend)];
+  RightKneeGroup.spin = [0, 0, radians(p.kneeBend)];
+}
 
-          // I позиция: долепени крака
-          if (activePoseId === 1) {
-            LeftHipGroup.center = [-1.3, LeftHipGroup.center[1], 0];
-            RightHipGroup.center = [1.3, RightHipGroup.center[1], 0];
-          }
-
-          // V позиция: по-плътно кръстосване
-          if (activePoseId === 5) {
-            LeftHipGroup.center = [-1.8, LeftHipGroup.center[1], 2.0];
-            RightHipGroup.center = [1.8, RightHipGroup.center[1], -2.0];
-          }
-        }
 
         // правим goLegs глобална, за да я виждат бутоните
         window.goLegs = function (id) {
@@ -433,15 +432,17 @@
           if (tween) tween.stop();
 
           tween = new TWEEN.Tween(current)
-            .to(
-              {
-                dist: target.dist,
-                turnout: target.turnout,
-                front: target.front,
-                kneeBend: target.kneeBend
-              },
-              900
-            )
+  .to(
+    {
+      baseX: target.baseX,
+      dist: target.dist,
+      turnout: target.turnout,
+      front: target.front,
+      kneeBend: target.kneeBend
+    },
+    900
+  )
+
             .easing(TWEEN.Easing.Quadratic.InOut)
             .onUpdate(() => applyLegPose(current))
             .start();
